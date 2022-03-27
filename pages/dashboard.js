@@ -3,19 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import DropDownList from '../shared/components/dropDownList';
 import Chart from '../shared/components/chart'
 
-import  * as api from '../shared/services/dashboard.service'
- 
-//import Item from '../shared/models/item.model'
-
-// export async function getStaticProps() {
-//     const res = await fetch('https://raw.githubusercontent.com/abdelrhman-arnos/analysis-fe-challenge/master/data.json')
-//     const data = await res.json();
-//     return {
-//       props: {
-//         data
-//       },
-//     }
-//   }
+import  * as api from './api/dashboard.service'
 
 
 const Dashboard = () => {
@@ -44,10 +32,10 @@ const Dashboard = () => {
     dataHandling();
   },[data])
 
-  useEffect(() => {
+  /* useEffect(() => {
     chartDtatHandling();
   },[currentCountry,currentCamp])
-
+ */
 
   const init = async () => {
       if(data.length == 0 ) {
@@ -63,13 +51,13 @@ const Dashboard = () => {
   
   const dataHandling = () => {
       const countryList = [... countries];
-      const schoolList = [...schools];
+      const schoolList = ['show all'];
       const campList = [...camps];
       if(data.length) {
         data.map( (item) => {
-            !isItemExistHandling(countryList ,item.country) && countryList.push(item.country) //setcountries([...countries, item.country])
-            !isItemExistHandling(schoolList ,item.school) && schoolList.push(item.school); //setSchools([...schools, item.school]);
-            !isItemExistHandling(campList ,item.camp) && campList.push(item.camp); //setCamps([...camps , item.camp]);
+          !isItemExistHandling(countryList ,item.country) && countryList.push(item.country); //setcountries([...countries, item.country]); //
+          !isItemExistHandling(schoolList ,item.school) && schoolList.push(item.school); // setSchools([...schools, item.school]);
+          !isItemExistHandling(campList ,item.camp) && campList.push(item.camp); //setCamps([...camps , item.camp]);
         });
         setcountries(countryList);
         setSchools(schoolList);
@@ -100,17 +88,16 @@ const Dashboard = () => {
     }
   const chartDtatHandling = () => {
     const ChartsData = [];
+    const dataVal =[];
     const dataMap =  new Map(groupedData);
-    //console.log('dataMap',dataMap);
     dataMap.forEach((value,key) => {
+        dataVal =[];
         const color = getRandomColor();
-        const dataVal = value.map(ele => {
+          value.map(ele => {
             if(ele.country == currentCountry && ele.camp == currentCamp) {
-                return ele.lessons
+              dataVal.push(ele.lessons)
             }
         });
-        dataVal = dataVal.filter(Boolean);
-        //console.log('dataVal',dataVal); 
         dataVal.length > 0 &&
         ChartsData.push({
         label: key,
@@ -118,10 +105,27 @@ const Dashboard = () => {
         borderColor: color,
         backgroundColor: color,
         });
-        setUpdateChart(true);
-        setChartData(ChartsData)
-    })
-    //console.log('chartData',chartData); 
+    });
+    setUpdateChart(true);
+    setChartData(ChartsData);    
+  }
+
+  const handleSchoolChange = () => {
+    const lessonsNo= [];
+    const color = getRandomColor();
+    groupedData.get(currentSchool).map(ele => {
+      ele.country == currentCountry && ele.camp == currentCamp && lessonsNo.push(ele.lessons)
+    });
+      setChartData(
+        [
+          {
+            label: currentSchool,
+            data: lessonsNo,
+            borderColor: color,
+            backgroundColor: color,
+            }
+        ]
+      ); 
   }
 
   const isItemExistHandling = (arr , item) => {
@@ -133,16 +137,19 @@ const Dashboard = () => {
         {
             title: 'Selected Country',
             type: 'country',
+            intialValue: currentCountry,
             list: countries
          },
          {
              title: 'Selected Camp',
              type: 'camp',
+             intialValue: currentCamp,
              list: camps
          },
          {
-             title: 'Delected School',
+             title: 'Selected School',
              type: 'school',
+             intialValue: currentSchool,
              list: schools
          }
     ];
@@ -151,17 +158,16 @@ const Dashboard = () => {
 
   const changeHandling = (value,type) => {
     switch (type) {
-        case 'country' : setCurrentCamp(value);
+        case 'country' : setCurrentCountry(value);
         break;
         case 'camp': setCurrentCamp(value);
         break;
         case 'school': setCurrentSchool(value);
         break;
     }
+    type == 'school' && value !== 'show all'? handleSchoolChange(): chartDtatHandling();
   }
-
-
-
+  
   if (loading) {
       return (
           <>
@@ -170,25 +176,22 @@ const Dashboard = () => {
       )
   }
 
-
-
   return (
     <>
         <h2>Analysis Chart</h2>
         <h3>Number of Lessons </h3>
-        <div className='row mt-5'>
+        <div className='row mt-5' key={Math.random()}>
             {
                 options.map( (ele , i) => (
                     <div className='col-xs-12 col-sm-12 col-md-4 col-lg-4'>
-                        <DropDownList key={ele.type} changeHandling={changeHandling} keyNo={'select_'+i} dropDown = {ele} ></DropDownList>
+                        <DropDownList key={ele.title} changeHandling={changeHandling} keyNo={'select_'+i} dropDown = {ele} ></DropDownList>
                     </div>
                 ))
             }
         </div>
 
         <div className='row pt-5 mt-2'>
-            <Chart data ={chartData} onUpdate={updateChart}></Chart>
-
+            <Chart key={Math.random()} data ={chartData} onUpdate={updateChart}></Chart>
         </div>
     </>
     

@@ -60,8 +60,9 @@ const Chart = (props) => {
 
     useEffect(() => {
         const chart = cahrtRef.current;
-       // console.log('chart',chart);
+        console.log('props.data',props.data);
         chart.update()
+        
     });
 
     const data = {

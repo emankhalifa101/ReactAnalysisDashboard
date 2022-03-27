@@ -11,7 +11,7 @@ const Layout = ({children}) => {
         <div className='container sectionPadding'>
             <div className='row'>
                 <div className='col-12'>
-                    <main>{ children }</main>  
+                    <main key={Math.random()}>{ children }</main>  
                 </div>
             </div>
         </div>
