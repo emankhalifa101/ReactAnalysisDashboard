@@ -7,6 +7,7 @@ import useDataHandler from '../shared/hooks/useDataHandler'
 
 
 const Dashboard = () => {
+    const [loading, setLoading] = useState(true);
     const [options , setOptions] = useState([]);
     const [groupedData , setGroupedData] = useState([]);
     const [chartData , setChartData] = useState([]);
@@ -17,14 +18,15 @@ const Dashboard = () => {
     const router = useRouter();
 
     const url = 'https://raw.githubusercontent.com/abdelrhman-arnos/analysis-fe-challenge/master/data.json';
-    let {loading ,data , countries , camps , schools} = useDataHandler(url);
+    let {hasData,data , countries , camps , schools} = useDataHandler(url);
 
     const selectList = [];
 
   
   useEffect( async () => {
+    data.length> 0 ? setLoading(false) : setLoading(true);
    init();
-  },[]);
+  },[data,hasData]);
 
   const init = async() => {
     selectListFormating();

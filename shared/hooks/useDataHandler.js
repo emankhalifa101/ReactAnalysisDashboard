@@ -4,7 +4,7 @@ import  * as api from '../../pages/api/dashboard.service'
 
 
 const useDataHandler = (url) => {
-    const [loading, setLoading] = useState(true);
+    const [hasData, setFlag] = useState(false);
     const [data, setData] = useState([]);
     const [countries, setcountries] = useState([]);
     const [camps, setCamps] = useState([]);
@@ -16,15 +16,13 @@ const useDataHandler = (url) => {
 
     useEffect(async() => {
         dataHandling();
-    },[data])
+    },[data,hasData])
 
     const init = async () => {
-        setLoading(true);
         if(data.length == 0 ) {
             try {
                 let res = await api.getDashboardList(url);
                 setData(res.data);
-                setLoading(false)
             } catch {
             }
         }
@@ -35,10 +33,11 @@ const useDataHandler = (url) => {
     }
 
     const dataHandling = () => {
+        setFlag(false);
         const countryList = [... countries];
         const schoolList = ['show all'];
         const campList = [...camps];
-        if(data.length) {
+        if(data.length > 0) {
           data.map( (item) => {
             !isItemExistHandling(countryList ,item.country) && countryList.push(item.country); //setcountries([...countries, item.country]); //
             !isItemExistHandling(schoolList ,item.school) && schoolList.push(item.school); // setSchools([...schools, item.school]);
@@ -47,10 +46,12 @@ const useDataHandler = (url) => {
           setcountries(countryList);
           setSchools(schoolList);
           setCamps(campList);
+          countries.length == 0 && setFlag(true);
       }
+
     }
 
-  return {loading ,data , countries , camps , schools}
+  return {hasData,data , countries , camps , schools}
 }
 
 export default useDataHandler;
