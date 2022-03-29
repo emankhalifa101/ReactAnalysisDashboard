@@ -2,18 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useRouter, Router } from 'next/router'
 
 import DropDownList from '../shared/components/dropDownList';
-import Chart from '../shared/components/chart'
-
-import  * as api from './api/dashboard.service'
-
+import Chart from '../shared/components/chart';
+import useDataHandler from '../shared/hooks/useDataHandler'
 
 
 const Dashboard = () => {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const [countries, setcountries] = useState([]);
-    const [camps, setCamps] = useState([]);
-    const [schools, setSchools] = useState([]);
     const [options , setOptions] = useState([]);
     const [groupedData , setGroupedData] = useState([]);
     const [chartData , setChartData] = useState([]);
@@ -23,52 +16,20 @@ const Dashboard = () => {
     const [updateChart,setUpdateChart] = useState(false);
     const router = useRouter();
 
-    const selectList = [];
     const url = 'https://raw.githubusercontent.com/abdelrhman-arnos/analysis-fe-challenge/master/data.json';
+    let {loading ,data , countries , camps , schools} = useDataHandler(url);
+
+    const selectList = [];
 
   
   useEffect( async () => {
    init();
-  });
+  },[]);
 
-  useEffect(async() => {
-    dataHandling();
-  },[data])
-
-
-  const init = async () => {
-      if(data.length == 0 ) {
-          try {
-              setLoading(true)
-              let res = await api.getDashboardList(url);
-              setData(res.data);
-          } catch {
-            setLoading(false)
-          }
-      }
-  }
-  
-  const dataHandling = () => {
-      setLoading(true);
-      const countryList = [... countries];
-      const schoolList = ['show all'];
-      const campList = [...camps];
-      if(data.length) {
-        data.map( (item) => {
-          !isItemExistHandling(countryList ,item.country) && countryList.push(item.country); //setcountries([...countries, item.country]); //
-          !isItemExistHandling(schoolList ,item.school) && schoolList.push(item.school); // setSchools([...schools, item.school]);
-          !isItemExistHandling(campList ,item.camp) && campList.push(item.camp); //setCamps([...camps , item.camp]);
-        });
-        setcountries(countryList);
-        setSchools(schoolList);
-        setCamps(campList);
-        selectListFormating();
-        dataFormating()
-        chartDatatHandling();
-        setLoading(false);
-    } else {
-        setLoading(true);
-    }
+  const init = async() => {
+    selectListFormating();
+    dataFormating()
+    chartDatatHandling();
   }
 
   const  getRandomColor = () => {
@@ -129,10 +90,6 @@ const Dashboard = () => {
       ); 
   }
 
-  const isItemExistHandling = (arr , item) => {
-    return  arr.length > 0 && arr.find(ele => ele == item) ? true : false;
-  }
-
   const selectListFormating = () => {
     selectList = [
         {
@@ -176,7 +133,6 @@ const Dashboard = () => {
       school: school,
       lessons: lessons
     }
-    //JSON.stringify(pointinfo)
     router.push({pathname : '/pointDetails',
       query : { data: JSON.stringify(pointinfo)}}
     )
