@@ -1,16 +1,22 @@
-import React from 'react'
+import React ,{ useState ,useEffect} from 'react'
 
 const DropDownList = (props) => {
+  
+  const [values,setValues] = useState({});
+
+   
   const handleChange = (value , key) => {
+    let val ={...values}
+    val[key] = value;
+    setValues(ele => ({...ele ,val}));  
     props.changeHandling(value , key);
   }
-  console.log('props.dropDown.intialValue',props.dropDown.intialValue);
 
   return (
     <>
         <div className='row'>
             <div className='col-xs-12 col-sm-4 col-md-4 col-lg-4'>
-                <label key={props.keyNo+Math.random()} className='mt-2' >{props.dropDown.title}</label>
+                <label key={values[props.dropDown.type]? values[props.dropDown.type] : props.keyNo+Math.random()} className='mt-2' >{props.dropDown.title}</label>
             </div>
             <div className="col-xs-12 col-sm-8 col-md-8 col-lg-8" >
                 <select 
@@ -19,7 +25,7 @@ const DropDownList = (props) => {
                 className="form-select" 
                 >
                     {props.dropDown.list && props.dropDown.list.map( (item , i) => 
-                      <option selected={props.dropDown.intialValue} key={item + i} value={item}>{item}</option>
+                      <option key={item + i} value={item}>{item}</option>
                       )}
                 </select>
             </div>

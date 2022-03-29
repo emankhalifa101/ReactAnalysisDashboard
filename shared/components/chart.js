@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line ,getElementAtEvent ,getDatasetAtEvent} from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -56,22 +56,25 @@ ChartJS.register(
  */
 const Chart = (props) => {
 
-    const cahrtRef = useRef();
+  const cahrtRef = useRef();
+  const data = {
+    labels,
+    datasets: props.data
+  };
 
-    useEffect(() => {
-        const chart = cahrtRef.current;
-        console.log('props.data',props.data);
-        chart.update()
-        
-    });
+  useEffect(() => {
+      const chart = cahrtRef.current;
+      chart.update()
+  });
 
-    const data = {
-        labels,
-        datasets: props.data
-    };
+  const handleClick = (event) => {
+    let element = getElementAtEvent(cahrtRef.current, event)[0];
+    let pointInfo = props.data[element['datasetIndex']];
+    props.handleClick(pointInfo.label,pointInfo.data[element.index])
+  }
 
   return (
-    <Line ref={cahrtRef} options={options} data={data} />
+    <Line ref={cahrtRef} options={options} data={data} onClick={handleClick} />
   )
 }
 

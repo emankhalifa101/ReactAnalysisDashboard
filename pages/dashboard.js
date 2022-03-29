@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useRouter, Router } from 'next/router'
 
 import DropDownList from '../shared/components/dropDownList';
 import Chart from '../shared/components/chart'
 
 import  * as api from './api/dashboard.service'
+
 
 
 const Dashboard = () => {
@@ -19,23 +21,20 @@ const Dashboard = () => {
     const [currentCamp , setCurrentCamp] = useState('Omaka');
     const [currentSchool , setCurrentSchool] = useState("show all");
     const [updateChart,setUpdateChart] = useState(false);
+    const router = useRouter();
 
     const selectList = [];
     const url = 'https://raw.githubusercontent.com/abdelrhman-arnos/analysis-fe-challenge/master/data.json';
 
   
-  useEffect( () => {
+  useEffect( async () => {
    init();
-  },[]);
+  });
 
-  useEffect(() => {
+  useEffect(async() => {
     dataHandling();
   },[data])
 
-  /* useEffect(() => {
-    chartDtatHandling();
-  },[currentCountry,currentCamp])
- */
 
   const init = async () => {
       if(data.length == 0 ) {
@@ -50,6 +49,7 @@ const Dashboard = () => {
   }
   
   const dataHandling = () => {
+      setLoading(true);
       const countryList = [... countries];
       const schoolList = ['show all'];
       const campList = [...camps];
@@ -64,12 +64,13 @@ const Dashboard = () => {
         setCamps(campList);
         selectListFormating();
         dataFormating()
-        chartDtatHandling();
+        chartDatatHandling();
         setLoading(false);
     } else {
         setLoading(true);
     }
   }
+
   const  getRandomColor = () => {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
@@ -86,7 +87,7 @@ const Dashboard = () => {
         );
         setGroupedData(groupedMap)    
     }
-  const chartDtatHandling = () => {
+  const chartDatatHandling = () => {
     const ChartsData = [];
     const dataVal =[];
     const dataMap =  new Map(groupedData);
@@ -165,9 +166,23 @@ const Dashboard = () => {
         case 'school': setCurrentSchool(value);
         break;
     }
-    type == 'school' && value !== 'show all'? handleSchoolChange(): chartDtatHandling();
+    type == 'school' && value !== 'show all'? handleSchoolChange(): chartDatatHandling();
   }
-  
+
+  const handleClick = (school,lessons)=> {
+    let pointinfo = {
+      countery : currentCountry,
+      camp: currentCamp,
+      school: school,
+      lessons: lessons
+    }
+    //JSON.stringify(pointinfo)
+    router.push({pathname : '/pointDetails',
+      query : { data: JSON.stringify(pointinfo)}}
+    )
+  }
+
+
   if (loading) {
       return (
           <>
@@ -176,6 +191,7 @@ const Dashboard = () => {
       )
   }
 
+  
   return (
     <>
         <h2>Analysis Chart</h2>
@@ -191,7 +207,7 @@ const Dashboard = () => {
         </div>
 
         <div className='row pt-5 mt-2'>
-            <Chart key={Math.random()} data ={chartData} onUpdate={updateChart}></Chart>
+            <Chart key={Math.random()} data ={chartData} onUpdate={updateChart} handleClick={handleClick}></Chart>
         </div>
     </>
     
