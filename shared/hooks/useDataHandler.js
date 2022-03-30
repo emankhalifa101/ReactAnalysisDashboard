@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import  * as api from '../../pages/api/dashboard.service'
+import  * as api from '../../pages/api/dashboard'
 
 
-const useDataHandler = (url) => {
+const useDataHandler = () => {
     const [hasData, setFlag] = useState(false);
     const [data, setData] = useState([]);
     const [countries, setcountries] = useState([]);
@@ -21,7 +21,7 @@ const useDataHandler = (url) => {
     const init = async () => {
         if(data.length == 0 ) {
             try {
-                let res = await api.getDashboardList(url);
+                let res = await api.getDashboardList();
                 setData(res.data);
             } catch {
             }

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, Router } from 'next/router'
 
 import DropDownList from '../shared/components/dropDownList';
@@ -7,18 +7,19 @@ import useDataHandler from '../shared/hooks/useDataHandler'
 
 
 const Dashboard = () => {
+   const defaultVal =  {
+    country : 'Egypt',
+    camp: 'Omaka',
+    school: 'show all'
+    }
     const [loading, setLoading] = useState(true);
     const [options , setOptions] = useState([]);
     const [groupedData , setGroupedData] = useState([]);
     const [chartData , setChartData] = useState([]);
-    const [currentCountry , setCurrentCountry] = useState("Egypt");
-    const [currentCamp , setCurrentCamp] = useState('Omaka');
-    const [currentSchool , setCurrentSchool] = useState("show all");
-    const [updateChart,setUpdateChart] = useState(false);
+    const [intialValues , setIntialValues] = useState(defaultVal);
     const router = useRouter();
 
-    const url = 'https://raw.githubusercontent.com/abdelrhman-arnos/analysis-fe-challenge/master/data.json';
-    let {hasData,data , countries , camps , schools} = useDataHandler(url);
+    let {hasData,data , countries , camps , schools} = useDataHandler();
 
     const selectList = [];
 
@@ -27,6 +28,10 @@ const Dashboard = () => {
     data.length> 0 ? setLoading(false) : setLoading(true);
    init();
   },[data,hasData]);
+
+  useEffect( async () => {
+    chartDatatHandling();
+  },[intialValues]);
 
   const init = async() => {
     selectListFormating();
@@ -51,6 +56,9 @@ const Dashboard = () => {
         setGroupedData(groupedMap)    
     }
   const chartDatatHandling = () => {
+    intialValues['school'] != 'show all'? handleSchoolChange(): allSchollsHandling();        
+  }
+  const allSchollsHandling = () => {
     const ChartsData = [];
     const dataVal =[];
     const dataMap =  new Map(groupedData);
@@ -58,7 +66,7 @@ const Dashboard = () => {
         dataVal =[];
         const color = getRandomColor();
           value.map(ele => {
-            if(ele.country == currentCountry && ele.camp == currentCamp) {
+            if(ele.country == intialValues.country && ele.camp === intialValues.camp) {
               dataVal.push(ele.lessons)
             }
         });
@@ -70,26 +78,25 @@ const Dashboard = () => {
         backgroundColor: color,
         });
     });
-    setUpdateChart(true);
-    setChartData(ChartsData);    
+    setChartData(ChartsData);
   }
 
   const handleSchoolChange = () => {
     const lessonsNo= [];
     const color = getRandomColor();
-    groupedData.get(currentSchool).map(ele => {
-      ele.country == currentCountry && ele.camp == currentCamp && lessonsNo.push(ele.lessons)
+    groupedData.get(intialValues['school']).map(ele => {
+      ele.country == intialValues['country'] && ele.camp == intialValues['camp'] && lessonsNo.push(ele.lessons)
     });
-      setChartData(
-        [
-          {
-            label: currentSchool,
-            data: lessonsNo,
-            borderColor: color,
-            backgroundColor: color,
-            }
-        ]
-      ); 
+    setChartData(
+      [
+        {
+          label: intialValues['school'],
+          data: lessonsNo,
+          borderColor: color,
+          backgroundColor: color,
+          }
+      ]
+    );
   }
 
   const selectListFormating = () => {
@@ -97,19 +104,16 @@ const Dashboard = () => {
         {
             title: 'Selected Country',
             type: 'country',
-            intialValue: currentCountry,
             list: countries
          },
          {
              title: 'Selected Camp',
              type: 'camp',
-             intialValue: currentCamp,
              list: camps
          },
          {
              title: 'Selected School',
              type: 'school',
-             intialValue: currentSchool,
              list: schools
          }
     ];
@@ -117,21 +121,15 @@ const Dashboard = () => {
   }
 
   const changeHandling = (value,type) => {
-    switch (type) {
-        case 'country' : setCurrentCountry(value);
-        break;
-        case 'camp': setCurrentCamp(value);
-        break;
-        case 'school': setCurrentSchool(value);
-        break;
-    }
-    type == 'school' && value !== 'show all'? handleSchoolChange(): chartDatatHandling();
+    let values = {... intialValues}
+    values[type] = value;
+    setIntialValues(values);
   }
 
   const handleClick = (school,lessons)=> {
     let pointinfo = {
-      countery : currentCountry,
-      camp: currentCamp,
+      countery : intialValues.country,
+      camp: intialValues.camp,
       school: school,
       lessons: lessons
     }
@@ -144,7 +142,7 @@ const Dashboard = () => {
   if (loading) {
       return (
           <>
-            Loading ....
+            <h4>Loading ....</h4>
           </>
       )
   }
@@ -158,14 +156,14 @@ const Dashboard = () => {
             {
                 options.map( (ele , i) => (
                     <div className='col-xs-12 col-sm-12 col-md-4 col-lg-4'>
-                        <DropDownList key={ele.title} changeHandling={changeHandling} keyNo={'select_'+i} dropDown = {ele} ></DropDownList>
+                        <DropDownList key={ele.title} intialValues={intialValues} changeHandling={changeHandling} keyNo={'select_'+i} dropDown = {ele} ></DropDownList>
                     </div>
                 ))
             }
         </div>
 
         <div className='row pt-5 mt-2'>
-            <Chart key={Math.random()} data ={chartData} onUpdate={updateChart} handleClick={handleClick}></Chart>
+            <Chart key={Math.random()} data ={chartData}  handleClick={handleClick}></Chart>
         </div>
     </>
     
